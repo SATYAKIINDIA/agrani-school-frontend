@@ -12,7 +12,13 @@ export function AuthProvider({ children }) {
     const userData = localStorage.getItem('user_data');
     
     if (token && userData) {
-      setUser(JSON.parse(userData));
+      try {
+        setUser(JSON.parse(userData));
+      } catch (e) {
+        console.error('Failed to parse user data:', e);
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
+      }
     }
     setLoading(false);
   }, []);

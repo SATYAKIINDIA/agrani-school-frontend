@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { useEffect } from 'react';
 import MainLayout from './layouts/MainLayout';
 import SuperAdminLayout from './layouts/SuperAdminLayout';
 import PrincipalLayout from './layouts/PrincipalLayout';
@@ -7,6 +8,27 @@ import TeacherLayout from './layouts/TeacherLayout';
 import StudentLayout from './layouts/StudentLayout';
 import ParentLayout from './layouts/ParentLayout';
 import Login from './pages/Login';
+import SuperAdminLogin from './pages/SuperAdminLogin';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+
+// Handle auth expiration event
+function AuthHandler() {
+  const { logout } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+    const handleAuthExpired = (e) => {
+      logout();
+      window.location.href = `/login?redirect=${encodeURIComponent(e.detail.redirect)}`;
+    };
+
+    window.addEventListener('auth:expired', handleAuthExpired);
+    return () => window.removeEventListener('auth:expired', handleAuthExpired);
+  }, [logout]);
+
+  return null;
+}
 
 // Role-based route guard
 function ProtectedRoute({ children, allowedRoles }) {
@@ -31,8 +53,12 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <AuthHandler />
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/superadmin-login" element={<SuperAdminLogin />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           
           {/* Super Admin Routes */}
           <Route
